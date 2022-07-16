@@ -1,40 +1,38 @@
 import React from "react"
+import { NextPage } from "next"
 import { GetStaticProps } from "next"
 import Layout from "../components/Layout"
-import Post, { PostProps } from "../components/Post"
+import { PostProps } from "../components/Post"
+import prisma from '../lib/prisma';
+
+type User = {
+  id: string;
+  name: string;
+  email: string;
+  created_at: Date;
+  updated_at: Date;
+}
 
 export const getStaticProps: GetStaticProps = async () => {
-  const feed = [
-    {
-      id: "1",
-      title: "Prisma is the perfect ORM for Next.js",
-      content: "[Prisma](https://github.com/prisma/prisma) and Next.js go _great_ together!",
-      published: false,
-      author: {
-        name: "Nikolas Burk",
-        email: "burk@prisma.io",
-      },
-    },
-  ]
-  return { 
-    props: { feed }, 
-    revalidate: 10 
-  }
+  const feed = await prisma.user.findMany();
+  return {
+    props: { feed: JSON.parse(JSON.stringify(feed)) },
+  };
 }
 
 type Props = {
-  feed: PostProps[]
+  feed: User[]
 }
 
-const Blog: React.FC<Props> = (props) => {
+const Blog: NextPage<Props> = (props) => {
   return (
     <Layout>
       <div className="page">
         <h1>Public Feed</h1>
         <main>
-          {props.feed.map((post) => (
-            <div key={post.id} className="post">
-              <Post post={post} />
+          {props.feed.map((user) => (
+            <div key={user.id}>
+              <p>{user.name}</p>
             </div>
           ))}
         </main>
